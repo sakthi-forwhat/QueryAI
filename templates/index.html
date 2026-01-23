@@ -1,38 +1,101 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>AI Database Chat</title>
-    <style>
-        body { font-family: sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
-        #chat-box { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; margin-bottom: 10px; }
-        .user { color: blue; margin-bottom: 5px; }
-        .ai { color: green; margin-bottom: 15px; font-weight: bold; }
-    </style>
-</head>
 <body>
-    <h2>Data Chat AI</h2>
-    <div id="chat-box"></div>
-    <input type="text" id="user-input" placeholder="Ask a question..." style="width: 80%;">
-    <button onclick="sendQuery()">Send</button>
+    <div class="app-container">
+        <aside class="sidebar">
+            <h3>🗄️ Database</h3>
+            <div class="db-info">
+                <strong>Status:</strong> <span style="color: #4CAF50;">Connected</span><br>
+                <strong>Type:</strong> SQLite<br>
+                <hr>
+                <strong>Available Tables:</strong>
+                <ul>
+                    <li>products</li>
+                    <li>categories (demo)</li>
+                </ul>
+            </div>
+            <div class="tips">
+                <p><small>💡 Try: "What's the total value of our inventory?"</small></p>
+            </div>
+        </aside>
+
+        <main class="chat-section">
+            <h2>Data Chat AI</h2>
+            <div id="chat-box">
+                <div class="ai">AI: Hello! I'm connected to your store database. How can I help you today?</div>
+            </div>
+            
+            <div class="input-area">
+                <div id="loading" style="display:none;"><small>⚙️ AI is querying the database...</small></div>
+                <div class="input-group">
+                    <input type="text" id="user-input" placeholder="Ask about products, prices, or stock...">
+                    <button onclick="sendQuery()">Send</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #f4f7f6; }
+        
+        .app-container { display: flex; height: 100vh; }
+        
+        .sidebar { width: 250px; background: #2c3e50; color: white; padding: 20px; border-right: 1px solid #ddd; }
+        .sidebar h3 { margin-top: 0; color: #ecf0f1; }
+        .db-info { background: #34495e; padding: 15px; border-radius: 8px; font-size: 0.9em; }
+        
+        .chat-section { flex: 1; display: flex; flex-direction: column; padding: 40px; }
+        
+        #chat-box { 
+            flex: 1; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #eee;
+        }
+
+        .user { background: #e3f2fd; color: #1565c0; padding: 10px 15px; border-radius: 15px 15px 0 15px; 
+                align-self: flex-end; margin-bottom: 10px; max-width: 80%; margin-left: auto; }
+        
+        .ai { background: #f1f8e9; color: #2e7d32; padding: 10px 15px; border-radius: 15px 15px 15px 0; 
+              margin-bottom: 15px; max-width: 80%; border: 1px solid #c8e6c9; }
+
+        .input-area { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        .input-group { display: flex; gap: 10px; }
+        
+        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
+        input:focus { border-color: #2196F3; }
+        
+        button { background: #2196F3; color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #1976D2; }
+        
+        #loading { margin-bottom: 5px; color: #666; font-style: italic; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    </style>
 
     <script>
         async function sendQuery() {
             const input = document.getElementById('user-input');
             const box = document.getElementById('chat-box');
+            const loader = document.getElementById('loading');
             const query = input.value;
+            if (!query) return;
             
             box.innerHTML += `<div class="user">You: ${query}</div>`;
             input.value = '';
-
-            const response = await fetch('/ask', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({query: query})
-            });
-            const data = await response.json();
-            box.innerHTML += `<div class="ai">AI: ${data.answer}</div>`;
+            loader.style.display = 'block';
             box.scrollTop = box.scrollHeight;
+
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({query: query})
+                });
+                const data = await response.json();
+                box.innerHTML += `<div class="ai">AI: ${data.answer}</div>`;
+            } catch (error) {
+                box.innerHTML += `<div class="ai" style="color:red;">Error: Could not reach server.</div>`;
+            } finally {
+                loader.style.display = 'none';
+                box.scrollTop = box.scrollHeight;
+            }
         }
     </script>
 </body>
-</html>
