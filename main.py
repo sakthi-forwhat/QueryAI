@@ -32,13 +32,29 @@ Base.metadata.create_all(engine)
 # Seed dummy data
 Session = sessionmaker(bind=engine)
 session = Session()
+
 if session.query(Product).count() == 0:
     session.add_all([
+        # Electronics
         Product(name="Laptop", price=1200.0, stock=10),
         Product(name="Mouse", price=25.5, stock=50),
-        Product(name="Keyboard", price=75.0, stock=20)
+        Product(name="Keyboard", price=75.0, stock=20),
+        Product(name="Monitor", price=350.0, stock=8),
+        Product(name="Headphones", price=199.99, stock=15),
+        
+        # Office Supplies
+        Product(name="Desk Chair", price=250.0, stock=5),
+        Product(name="LED Lamp", price=45.0, stock=30),
+        Product(name="Notebook", price=12.99, stock=100),
+        
+        # Accessories
+        Product(name="USB-C Hub", price=49.99, stock=40),
+        Product(name="Webcam", price=89.0, stock=12),
+        Product(name="External SSD", price=150.0, stock=7)
     ])
     session.commit()
+    print("✅ Database seeded with 11 products!")
+    
 session.close()
 
 # --- STEP 3: MISTRAL AGENT SETUP ---
